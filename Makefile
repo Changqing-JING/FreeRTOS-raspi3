@@ -1,4 +1,4 @@
-CROSS ?= aarch64-none-elf
+CROSS ?= aarch64-linux-gnu
 CFLAGS =  -mcpu=cortex-a53 -fpic -ffreestanding -std=gnu99 -O2 -Wall -Wextra -I$(INCLUDEPATH1) -I$(INCLUDEPATH2) -I$(INCLUDEPATH3)
 ASMFLAGS = -mcpu=cortex-a53
 
@@ -24,8 +24,8 @@ OBJS +=build/timers.o
 OBJS +=build/heap_1.o
 
 kernel8.elf : raspberrypi3.ld $(OBJS)
-	$(CROSS)-gcc -Wl,--build-id=none -std=gnu11 -T raspberrypi3.ld -o $@ -ffreestanding -O2 -nostdlib $(OBJS)
-	$(CROSS)-objdump -D kernel8.elf > kernel8.list
+	$(CROSS)-gcc -Wl,--build-id=none -std=gnu11 -T raspberrypi3.ld -o build/$@ -ffreestanding -O2 -nostdlib $(OBJS)
+	$(CROSS)-objdump -D build/kernel8.elf > build/kernel8.list
 
 build/%.o : Demo/%.S $(BUILDPATH)
 	$(CROSS)-as $(ASMFLAGS) -c -o $@ $<
@@ -55,12 +55,10 @@ clean :
 	rm -f *.elf
 	rm -f *.list
 
-run :
-	$(MAKE) kernel8.elf
-	qemu-system-aarch64 -M raspi3 -m 1024 -serial null -serial mon:stdio -nographic -kernel kernel8.elf
+run: kernel8.elf
+	qemu-system-aarch64 -M raspi3b -m 1024 -serial null -serial mon:stdio -nographic -kernel build/$<
 
 runasm :
-	$(MAKE) kernel8.elf
-	qemu-system-aarch64 -M raspi3 -m 1024 -serial null -serial mon:stdio -nographic -kernel kernel8.elf -d in_asm
+	qemu-system-aarch64 -M raspi3b -m 1024 -serial null -serial mon:stdio -nographic -kernel build/$< -d in_asm
 
 
